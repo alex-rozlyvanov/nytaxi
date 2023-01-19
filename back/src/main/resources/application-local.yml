@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taxi
+    username: local_user
+    password: local_password
+  jpa:
+    show-sql: true

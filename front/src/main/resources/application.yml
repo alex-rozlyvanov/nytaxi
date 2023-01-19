@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: taxi_front
+  redis:
+    host: localhost
+    port: 6379
+    client-name: front
+  data:
+    redis:
+      repositories:
+        enabled: false
+#  kafka:
+#    bootstrap-servers: localhost:9092
+app:
+  jwt:
+    access:
+      secret: YWNjZXNzX3Rva2VuX3NlY3JldA==
+      expiration: 5m
+    issuer: who_knows
+    refresh:
+      expiration: 1h
+      secret: dHNzc3NzX2l0X2lzX3RoZV9yZWZyZXNoX3Rva2VuX3N1cGVyX3NlY3JldA==
+  clients:
+    default:
+      id: default-client
+      password: dHNzc3NzX2l0X2lzX3RoZV9yZWZyZXNoX3Rva2VuX3N1cGVyX3NlY3JldA==
+  kafka:
+    dead-letter-topic:
+      suffix: ".DTL"
+    topics:
+      taxi-trip:
+        name: "taxi-trip"
+        partitions: 10
+        replicas: 1
+        dead-letter-topic:
+          partitions: 1
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+springdoc:
+  swagger-ui:
+    path: /docs/swagger-ui.html
+  api-docs:
+    path: /docs/api-docs

@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres_db/taxi
+    username: local_user
+    password: local_password
+  jpa:
+    show-sql: true
+  kafka:
+    bootstrap-servers: http://broker:9092

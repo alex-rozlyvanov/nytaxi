@@ -1,0 +1,6 @@
+
+version = '0.0.1'
+
+tasks.register('printVersion') {
+    println project.version
+}

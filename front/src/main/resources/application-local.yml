@@ -1,0 +1,5 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password: ApOCINp0q8n3cN48cn23CaO74PCSMoiT

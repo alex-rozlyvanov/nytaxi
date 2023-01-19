@@ -1,0 +1,41 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: taxi_back
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taxi
+    username: local_user
+    password: local_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: back
+
+app:
+  kafka:
+    back-off:
+      max-retries: 3
+      initial-interval: 500ms
+      max-Interval: 5s
+      multiplier: 1.5
+    dead-letter-topic:
+      suffix: ".DTL"
+    topics:
+      taxi-trip:
+        name: "taxi-trip"
+        partitions: 10

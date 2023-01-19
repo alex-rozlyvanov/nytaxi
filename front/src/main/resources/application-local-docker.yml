@@ -1,0 +1,7 @@
+spring:
+  redis:
+    host: redis
+    port: 6379
+    password: ApOCINp0q8n3cN48cn23CaO74PCSMoiT
+  kafka:
+    bootstrap-servers: broker:9092
