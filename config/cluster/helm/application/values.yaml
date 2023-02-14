@@ -1,0 +1,125 @@
+
+profile: "local-kube"
+serviceAccount:
+  name: secrets-store-csi-driver-role
+  roleArn: replaceIt
+
+image:
+  rollDeployment: false
+  repository: nytaxi
+  pullPolicy: IfNotPresent
+  tag: 0.0.0
+  redis:
+    repository: redis
+    tag: 7.0.5-alpine
+    pullPolicy: IfNotPresent
+  zookeeper:
+    repository: confluentinc/cp-zookeeper
+    tag: 7.2.2
+    pullPolicy: IfNotPresent
+  broker:
+    repository: confluentinc/cp-server
+    tag: 7.2.2
+    pullPolicy: IfNotPresent
+  database:
+    repository: postgres
+    tag: 14.0-alpine
+    pullPolicy: IfNotPresent
+
+
+front:
+  port: 8080
+  resources:
+    limits:
+      cpu: 2
+      memory: 2G
+    requests:
+      cpu: 1
+      memory: 1G
+
+client:
+  enabled: false
+  resources:
+    limits:
+      cpu: 2
+      memory: 2G
+    requests:
+      cpu: 1
+      memory: 1G
+
+calculator:
+  resources:
+    limits:
+      cpu: 2
+      memory: 2G
+    requests:
+      cpu: 1
+      memory: 1G
+
+back:
+  port: 8080
+  resources:
+    limits:
+      cpu: 2
+      memory: 2G
+    requests:
+      cpu: 1
+      memory: 1G
+
+redis:
+  host: redis
+  port: 6379
+  resources:
+    limits:
+      cpu: 2
+      memory: 2G
+    requests:
+      cpu: 1
+      memory: 1G
+
+kafka:
+  broker:
+    port: "9092"
+    resources:
+      limits:
+        cpu: 2
+        memory: 4G
+      requests:
+        cpu: 1
+        memory: 2G
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+    KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+    KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: "1"
+    KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: "1"
+    KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+    KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+  zookeeper:
+    resources:
+      limits:
+        cpu: 2
+        memory: 4G
+      requests:
+        cpu: 1
+        memory: 2G
+    port: "2181"
+    tickTime: "2000"
+
+database:
+  port: "5432"
+  host: "postgresdb"
+  resources:
+    limits:
+      cpu: 2
+      memory: 4G
+    requests:
+      cpu: 1
+      memory: 2G
+
+ingress: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80

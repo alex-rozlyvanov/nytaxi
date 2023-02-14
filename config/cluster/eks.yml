@@ -1,0 +1,25 @@
+# nonk8s
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: nytaxi-cluster
+  region: eu-central-1
+  version: "1.24"
+availabilityZones:
+  - eu-central-1a
+  - eu-central-1b
+iam:
+  withOIDC: true
+managedNodeGroups:
+  - name: general
+    labels:
+      role: general
+    instanceType: t2.micro
+    minSize: 1
+    maxSize: 10
+    desiredCapacity: 1
+    volumeSize: 20
+    iam:
+      withAddonPolicies:
+        albIngress: true

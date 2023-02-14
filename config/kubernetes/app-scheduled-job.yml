@@ -1,0 +1,25 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: calculator-deployment
+  labels:
+    app: calculator
+spec:
+  schedule: "1 1 1 1 *"
+  jobTemplate:
+    metadata:
+      labels:
+        app: calculator
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: calculator
+              image: nytaxi:0.0.3
+              env:
+                - name: APP
+                  value: "calculator"
+                - name: SPRING_PROFILES_ACTIVE
+                  value: "local-kube"

@@ -1,0 +1,31 @@
+
+image:
+  rollDeployment: true
+  repository: nytaxi
+  pullPolicy: Always
+  tag: dev
+
+front:
+  port: 8080
+  profile: "dev"
+
+back:
+  port: 8080
+
+redis:
+  port: 6379
+
+database:
+  port: "5432"
+
+ingress:
+  className: "alb"
+#  resourceTags:
+#    alb.ingress.kubernetes.io/tags: project={{ .Chart.Name }},namespace={{ .Release.Namespace }}
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+  host: "front.nytaxi"
+  path: "/"
+  service: "front"

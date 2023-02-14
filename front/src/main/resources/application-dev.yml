@@ -1,0 +1,20 @@
+spring:
+  redis:
+    host: redis
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOSTRAP_SERVICES}
+app:
+  jwt:
+    access:
+      secret: ${JWT_ACCESS_SECRET}
+      expiration: 5m
+    issuer: who_knows
+    refresh:
+      expiration: 1h
+      secret: ${JWT_REFRESH_SECRET}
+  clients:
+    default:
+      id: ${CLIENT_ID}
+      password: ${CLIENT_PASSWORD}

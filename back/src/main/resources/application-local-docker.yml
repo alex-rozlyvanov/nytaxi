@@ -6,4 +6,4 @@ spring:
   jpa:
     show-sql: true
   kafka:
-    bootstrap-servers: http://broker:9092
+    bootstrap-servers: broker:9092

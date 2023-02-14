@@ -1,0 +1,65 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: calculator
+  labels:
+    app: calculator
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    metadata:
+      {{- if .Values.image.rollDeployment }}
+      annotations:
+        rollDeployment: {{ randAlphaNum 5 | quote }}
+      {{- end }}
+      labels:
+        app: calculator
+    spec:
+      template:
+        spec:
+          serviceAccountName: {{ .Values.serviceAccount.name }}
+          restartPolicy: OnFailure
+          containers:
+            - name: calculator
+              image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              {{- with .Values.calculator.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              env:
+                - name: APP
+                  value: "calculator"
+                - name: SPRING_PROFILES_ACTIVE
+                  value: "{{ .Values.profile }}"
+                - name: REDIS_PORT
+                  value: "{{ .Values.redis.port }}"
+                - name: REDIS_HOST
+                  value: "{{ .Values.redis.host }}"
+                - name: REDIS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: redis-pass
+                      key: password
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-auth
+                      key: user
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-auth
+                      key: password
+                - name: POSTGRES_HOST
+                  value: "{{ .Values.database.host }}"
+                - name: POSTGRES_PORT
+                  value: "{{ .Values.database.port }}"
+          volumes:
+            - name: secrets
+              csi:
+                driver: secrets-store.csi.k8s.io
+                readOnly: true
+                volumeAttributes:
+                  secretProviderClass: aws-secrets

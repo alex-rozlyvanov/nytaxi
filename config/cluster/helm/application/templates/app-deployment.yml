@@ -1,0 +1,341 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front
+  labels:
+    app: front
+spec:
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      {{ if .Values.image.rollDeployment }}
+      annotations:
+        rollDeployment: {{ randAlphaNum 5 | quote }}
+      {{ end }}
+      labels:
+        app: front
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: front
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.front.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.front.port }}
+          env:
+            - name: APP
+              value: "front"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.profile }}"
+            - name: KAFKA_BOOSTRAP_SERVICES
+              value: "broker:{{ .Values.kafka.broker.port }}"
+            - name: REDIS_PORT
+              value: "{{ .Values.redis.port }}"
+            - name: REDIS_HOST
+              value: "{{ .Values.redis.host }}"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-pass
+                  key: password
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: client-auth
+                  key: id
+            - name: CLIENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: client-auth
+                  key: password
+            - name: JWT_ACCESS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-access
+                  key: secret
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-refresh
+                  key: secret
+      volumes:
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back
+  labels:
+    app: back
+spec:
+  selector:
+    matchLabels:
+      app: back
+  template:
+    metadata:
+      {{ if .Values.image.rollDeployment }}
+      annotations:
+        rollDeployment: {{ randAlphaNum 5 | quote }}
+      {{ end }}
+      labels:
+        app: back
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: back
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.back.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.back.port }}
+          env:
+            - name: APP
+              value: "back"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.profile }}"
+            - name: KAFKA_BOOSTRAP_SERVICES
+              value: "broker:{{ .Values.kafka.broker.port }}"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: password
+            - name: POSTGRES_HOST
+              value: "{{ .Values.database.host }}"
+            - name: POSTGRES_PORT
+              value: "{{ .Values.database.port }}"
+      volumes:
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
+{{- if .Values.client.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: client
+  labels:
+    app: client
+spec:
+  suspend: true
+  template:
+    metadata:
+      {{- if .Values.image.rollDeployment }}
+      annotations:
+        rollDeployment: {{ randAlphaNum 5 | quote }}
+      {{- end }}
+      labels:
+        app: client
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: client
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.client.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: APP
+              value: "client"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "{{ .Values.profile}}"
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: client-auth
+                  key: id
+            - name: CLIENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: client-auth
+                  key: password
+      restartPolicy: Never
+      volumes:
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: redis
+          image: {{ .Values.image.redis.repository }}:{{ .Values.image.redis.tag }}
+          imagePullPolicy: {{ .Values.image.redis.pullPolicy }}
+          {{- with .Values.redis.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          command:
+            - redis-server
+            - "/redis-master/redis.conf"
+          args:
+            - "--requirepass $(REDIS_PASSWORD)"
+          env:
+            - name: MASTER
+              value: "true"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-pass
+                  key: password
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+          volumeMounts:
+            - mountPath: /redis-master-data
+              name: data
+            - mountPath: /redis-master
+              name: config
+      volumes:
+        - name: data
+          emptyDir: { }
+        - name: config
+          configMap:
+            name: redis-config
+            items:
+              - key: redis-config
+                path: redis.conf
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+spec:
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: zookeeper
+          image: {{ .Values.image.zookeeper.repository }}:{{ .Values.image.zookeeper.tag }}
+          imagePullPolicy: {{ .Values.image.zookeeper.pullPolicy }}
+          {{- with .Values.kafka.zookeeper.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.kafka.zookeeper.port }}
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "{{ .Values.kafka.zookeeper.port }}"
+            - name: ZOOKEEPER_TICK_TIME
+              value: "{{ .Values.kafka.zookeeper.tickTime }}"
+      volumes:
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broker
+  labels:
+    app: broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broker
+  template:
+    metadata:
+      labels:
+        app: broker
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      hostname: broker
+      containers:
+        - env:
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper:{{ .Values.kafka.zookeeper.port }}"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://:{{ .Values.kafka.broker.port }}"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://broker:{{ .Values.kafka.broker.port }}"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "{{ .Values.kafka.broker.KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR }}"
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "{{ .Values.kafka.broker.KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS }}"
+            - name: KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR
+              value: "{{ .Values.kafka.broker.KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR }}"
+            - name: KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR
+              value: "{{ .Values.kafka.broker.KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR }}"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "{{ .Values.kafka.broker.KAFKA_TRANSACTION_STATE_LOG_MIN_ISR }}"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "{{ .Values.kafka.broker.KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR }}"
+          image: {{ .Values.image.broker.repository }}:{{ .Values.image.broker.tag }}
+          imagePullPolicy: {{ .Values.image.broker.pullPolicy }}
+          {{- with .Values.kafka.broker.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          name: broker
+          ports:
+            - containerPort: {{ .Values.kafka.broker.port }}
+      volumes:
+        - name: secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets

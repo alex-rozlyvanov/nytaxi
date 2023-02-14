@@ -1,0 +1,114 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+data:
+  redis-config: |
+    loglevel warning
+    save 20 1
+{{ if eq .Values.profile "local-kube" }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-pass
+stringData:
+  password: ApOCINp0q8n3cN48cn23CaO74PCSMoiT
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-auth
+stringData:
+  user: local_user
+  password: local_password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: client-auth
+stringData:
+  id: default-client
+  password: dHNzc3NzX2l0X2lzX3RoZV9yZWZyZXNoX3Rva2VuX3N1cGVyX3NlY3JldA==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-access
+stringData:
+  secret: YWNjZXNzX3Rva2VuX3NlY3JldA==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-refresh
+stringData:
+  secret: dHNzc3NzX2l0X2lzX3RoZV9yZWZyZXNoX3Rva2VuX3N1cGVyX3NlY3JldA==
+{{ else }}
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: aws-secrets
+spec:
+  provider: aws
+  secretObjects:
+    - secretName: redis-pass
+      type: Opaque
+      data:
+        - objectName: secret-redis-pass
+          key: password
+    - secretName: postgres-auth
+      type: Opaque
+      data:
+        - objectName: secret-postgres-user
+          key: user
+        - objectName: secret-postgres-password
+          key: password
+    - secretName: client-auth
+      type: Opaque
+      data:
+        - objectName: secret-client-id
+          key: id
+        - objectName: secret-client-password
+          key: password
+    - secretName: jwt-access
+      type: Opaque
+      data:
+        - objectName: secret-jwt-access
+    - secretName: jwt-refresh
+      type: Opaque
+      data:
+        - objectName: secret-jwt-refresh
+  parameters:
+    objects: |
+      - objectName: nytaxi/redis/password
+        objectType: secretsmanager
+        objectAlias: secret-redis-pass
+      - objectName: nytaxi/db/auth
+        objectType: secretsmanager
+        objectAlias: secret-postgres-auth
+        jmesPath:
+          - path: user
+            objectAlias: secret-postgres-user
+          - path: password
+            objectAlias: secret-postgres-password
+      - objectName: nytaxi/client/auth
+        objectType: secretsmanager
+        objectAlias: secret-client-auth
+        jmesPath:
+          - path: id
+            objectAlias: secret-client-id
+          - path: password
+            objectAlias: secret-client-password
+      - objectName: nytaxi/jwt/access
+        objectType: secretsmanager
+        objectAlias: secret-jwt-access
+      - objectName: nnytaxi/jwt/refresh
+        objectType: secretsmanager
+        objectAlias: secret-jwt-refresh
+{{ end }}
+---
+
+#https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html

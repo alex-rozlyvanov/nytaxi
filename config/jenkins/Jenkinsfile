@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'DOCKER_URL', defaultValue: 'public.ecr.aws/k7s0v3p5/nytaxi', description: 'ECR url')
+        text(name: 'ENV', defaultValue: 'dev', description: 'Env variable')
+        booleanParam(name: 'TAG', defaultValue: 'dev', description: 'Image default tag')
+        choice(name: 'REGION', defaultValue: 'eu-central-1', description: 'Cluster region')
+        password(name: 'CLUSTER_NAME', defaultValue: 'nytaxi-cluster', description: 'Custer name')
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                sh './gradlew clean assemble'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh './gradlew test'
+            }
+            post {
+                always {
+                    junit 'build/reports/*.xml'
+                }
+            }
+        }
+        stage('Build & Tag & Push Docker image') {
+            steps {
+                sh """
+                aws ecr-public get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${params.DOCKER_URL}
+                """
+                sh """
+                set -e
+                DOCKER_IMAGE_VERSION=$(./gradlew properties -q | grep 'version:' | awk '{print $2}')
+                DOCKER_IMAGE_NAME=$(./gradlew properties -q | grep 'name:' | awk '{print $2}')
+                DOCKER_IMAGE_FULLNAME=${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}
+
+                docker build -t ${DOCKER_IMAGE_FULLNAME} .
+                docker tag ${DOCKER_IMAGE_FULLNAME} ${params.DOCKER_URL}:${DOCKER_IMAGE_VERSION}
+                docker tag ${DOCKER_IMAGE_FULLNAME} ${params.DOCKER_URL}
+
+                docker push ${params.DOCKER_URL}:${DOCKER_IMAGE_VERSION}
+                docker push ${params.DOCKER_URL}
+                """
+            }
+        }
+        stage('Upgrade Kubernetes EKS cluster') {
+            steps {
+                sh "eksctl upgrade cluster -f config/cluster/eks.yml"
+                sh "aws eks update-kubeconfig --region ${REGION} --name ${params.CLUSTER_NAME}"
+            }
+        }
+        stage('Update Kubernetes environment') {
+            steps {
+                sh "echo Update Kubernetes addons"
+                sh """
+                helm upgrade ${params.ENV} config/secrets-store-csi-driver/ \
+                --install --create-namespace --kube-context=${params.ENV}
+                helm upgrade ${params.ENV} config/secrets-store-csi-driver-provider-aws/ \
+                --install --create-namespace --kube-context=${params.ENV}
+                """
+                echo "Update Kubernetes Apps"
+                sh """
+                AWS_SA_ROLE_ARN=$(aws iam get-role --role-name secrets-store-csi-driver-role --query 'Role.[Arn]' --output text)
+                helm upgrade ${params.ENV} config/charts/ \
+                --install --create-namespace --kube-context=${params.ENV} \
+                --set image.tag=${params.TAG} --set serviceAccount.roleArn=${AWS_SA_ROLE_ARN} \
+                -f ./config/charts/values-${params.ENV}.yaml
+                """
+            }
+        }
+    }
+}

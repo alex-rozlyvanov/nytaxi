@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Starter template for ECS
+
+Parameters:
+  OpenIdProviderARN:
+    Type: String
+    Description: The ARN of the IAM OIDC provider.
+
+Resources:
+
+  RedisPassword:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 16
+        ExcludePunctuation: false
+        IncludeSpace: false
+        ExcludeNumbers: true
+        ExcludeUppercase: true
+        SecretStringTemplate: '{}'
+        GenerateStringKey: 'password'
+      Name: nytaxi/redis/password
+
+  DBAuth:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 16
+        ExcludePunctuation: false
+        IncludeSpace: false
+        ExcludeNumbers: true
+        ExcludeUppercase: true
+        SecretStringTemplate: '{"user": "rw_user"}'
+        GenerateStringKey: 'password'
+      Name: nytaxi/db/auth
+
+  ClientAuth:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 16
+        ExcludePunctuation: false
+        IncludeSpace: false
+        ExcludeNumbers: true
+        ExcludeUppercase: true
+        SecretStringTemplate: '{"id": "default-client"}'
+        GenerateStringKey: 'password'
+      Name: nytaxi/client/auth
+
+  JWTAccess:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 16
+        ExcludePunctuation: false
+        IncludeSpace: false
+        ExcludeNumbers: true
+        ExcludeUppercase: true
+      Name: nytaxi/jwt/access
+
+  JWTRefresh:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 16
+        ExcludePunctuation: false
+        IncludeSpace: false
+        ExcludeNumbers: true
+        ExcludeUppercase: true
+      Name: nytaxi/jwt/refresh
+
+  DefaultPodRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: secrets-store-csi-driver-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated:
+                - !Ref OpenIdProviderARN
+            Action:
+              - sts:AssumeRoleWithWebIdentity
+      Policies:
+        - PolicyName: Policy-to-read-course-manager-secrets
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:DescribeSecret
+                Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:nytaxi/**"

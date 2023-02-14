@@ -1,0 +1,24 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: front-ingress
+spec:
+  tls:
+  - hosts:
+    - local.test
+    secretName: local-tls-secret
+  rules:
+  - host: local.test
+    http:
+      paths:
+        - path: /
+          pathType: Exact
+          backend:
+            service:
+              name: front
+              port:
+                number: 8080

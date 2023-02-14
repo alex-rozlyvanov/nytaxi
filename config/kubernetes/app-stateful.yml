@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresdb
+spec:
+  selector:
+    matchLabels:
+      app: postgresdb
+  replicas: 1
+  serviceName: postgresdb
+  template:
+    metadata:
+      labels:
+        app: postgresdb
+    spec:
+      containers:
+        - name: postgresdb
+          image: postgres:14.0-alpine
+          volumeMounts:
+            - name: postgresdb-disk
+              mountPath: /data
+          env:
+            - name: POSTGRES_USER
+              value: local_user
+            - name: POSTGRES_PASSWORD
+              value: local_password
+            - name: POSTGRES_DB
+              value: taxi
+            - name: PGDATA
+              value: /data/pgdata
+      # Volume Claim
+  volumeClaimTemplates:
+    - metadata:
+        name: postgresdb-disk
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 10Gi
