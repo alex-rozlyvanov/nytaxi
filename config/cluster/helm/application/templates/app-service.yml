@@ -68,7 +68,7 @@ metadata:
 spec:
   selector:
     app: postgresdb
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - port: {{ .Values.database.port }}
       targetPort: {{ .Values.database.port }}

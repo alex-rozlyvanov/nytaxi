@@ -17,8 +17,6 @@ Resources:
         IncludeSpace: false
         ExcludeNumbers: true
         ExcludeUppercase: true
-        SecretStringTemplate: '{}'
-        GenerateStringKey: 'password'
       Name: nytaxi/redis/password
 
   DBAuth:
@@ -26,7 +24,7 @@ Resources:
     Properties:
       GenerateSecretString:
         PasswordLength: 16
-        ExcludePunctuation: false
+        ExcludePunctuation: true
         IncludeSpace: false
         ExcludeNumbers: true
         ExcludeUppercase: true
@@ -82,8 +80,10 @@ Resources:
                 - !Ref OpenIdProviderARN
             Action:
               - sts:AssumeRoleWithWebIdentity
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
       Policies:
-        - PolicyName: Policy-to-read-course-manager-secrets
+        - PolicyName: Policy-to-read-secrets
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -92,3 +92,37 @@ Resources:
                   - secretsmanager:GetSecretValue
                   - secretsmanager:DescribeSecret
                 Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:nytaxi/**"
+        - PolicyName: Policy-to-manage-elastic-load-balancer
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeVpcs,
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeInstances
+                  - elasticloadbalancing:DescribeTargetGroups
+                  - elasticloadbalancing:DescribeTargetHealth
+                  - elasticloadbalancing:ModifyTargetGroup
+                  - elasticloadbalancing:ModifyTargetGroupAttributes
+                  - elasticloadbalancing:RegisterTargets
+                  - elasticloadbalancing:DeregisterTargets
+                Resource: "*"
+        - PolicyName: Policy-to-get-object-from-s3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !GetAtt FileBucket.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource: !Sub "${FileBucket.Arn}/*"
+
+  FileBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "orozlyvanov-nytaxi-file-bucket"

@@ -1,0 +1,16 @@
+load:
+  split-by: ','
+  threads: 2
+  record-limits: 0
+  duration: 1m
+  throttle: 10_000
+  url: 'http://front/api/v1/message'
+  file-path: ${FILE_PATH}
+  graceful-shutdown: 20s
+  request:
+    timeout: 5s
+authentication:
+  url: 'http://front/api/v1/authenticator/login'
+  tokenExpiration: 4m
+  id: ${CLIENT_ID}
+  password: ${CLIENT_PASSWORD}

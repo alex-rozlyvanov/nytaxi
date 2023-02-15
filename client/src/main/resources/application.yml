@@ -1,0 +1,20 @@
+load:
+  split-by: ','
+  threads: 36
+  record-limits: 0
+  duration: 10s
+  throttle: 10_000
+  url: 'http://front.nytaxi/api/v1/message'
+  file-path: '/home/o-rozlyvanov/Downloads/2018_Yellow_Taxi_Trip_Data.csv'
+  graceful-shutdown: 20s
+  request:
+    timeout: 5s
+authentication:
+  url: 'http://front.nytaxi/api/v1/authenticator/login'
+  tokenExpiration: 4m
+  id: 'default-client'
+  password: 'dHNzc3NzX2l0X2lzX3RoZV9yZWZyZXNoX3Rva2VuX3N1cGVyX3NlY3JldA=='
+
+spring:
+  main:
+    web-application-type: none

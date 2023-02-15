@@ -1,5 +1,6 @@
 
 profile: "local-kube"
+
 serviceAccount:
   name: secrets-store-csi-driver-role
   roleArn: replaceIt
@@ -31,62 +32,62 @@ front:
   port: 8080
   resources:
     limits:
-      cpu: 2
-      memory: 2G
-    requests:
-      cpu: 1
+#      cpu: 2
       memory: 1G
+    requests:
+#      cpu: 1
+      memory: 500Mi
 
 client:
   enabled: false
   resources:
     limits:
-      cpu: 2
-      memory: 2G
-    requests:
-      cpu: 1
+#      cpu: 2
       memory: 1G
+    requests:
+#      cpu: 1
+      memory: 500Mi
 
 calculator:
   resources:
     limits:
-      cpu: 2
-      memory: 2G
-    requests:
-      cpu: 1
+#      cpu: 2
       memory: 1G
+    requests:
+#      cpu: 1
+      memory: 500Mi
 
 back:
   port: 8080
   resources:
     limits:
-      cpu: 2
-      memory: 2G
-    requests:
-      cpu: 1
+#      cpu: 2
       memory: 1G
+    requests:
+#      cpu: 1
+      memory: 500Mi
 
 redis:
   host: redis
   port: 6379
   resources:
     limits:
-      cpu: 2
-      memory: 2G
-    requests:
-      cpu: 1
+#      cpu: 2
       memory: 1G
+    requests:
+#      cpu: 1
+      memory: 500Mi
 
 kafka:
   broker:
     port: "9092"
     resources:
       limits:
-        cpu: 2
-        memory: 4G
+#        cpu: 2
+        memory: 1G
       requests:
         cpu: 1
-        memory: 2G
+        memory: 500Mi
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
     KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
     KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: "1"
@@ -96,11 +97,11 @@ kafka:
   zookeeper:
     resources:
       limits:
-        cpu: 2
-        memory: 4G
+#        cpu: 2
+        memory: 1G
       requests:
-        cpu: 1
-        memory: 2G
+#        cpu: 1
+        memory: 500Mi
     port: "2181"
     tickTime: "2000"
 
@@ -109,11 +110,11 @@ database:
   host: "postgresdb"
   resources:
     limits:
-      cpu: 2
-      memory: 4G
+#      cpu: 2
+      memory: 1G
     requests:
-      cpu: 1
-      memory: 2G
+#      cpu: 1
+      memory: 500Mi
 
 ingress: {}
 

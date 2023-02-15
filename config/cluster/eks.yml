@@ -11,13 +11,29 @@ availabilityZones:
   - eu-central-1b
 iam:
   withOIDC: true
+addons:
+  - name: aws-ebs-csi-driver
+    version: v1.5.2-eksbuild.1
+    attachPolicyARNs:
+      - arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
 managedNodeGroups:
-  - name: general
+  - name: generalV1
     labels:
       role: general
-    instanceType: t2.micro
+    instanceType: t3.medium
     minSize: 1
-    maxSize: 10
+    maxSize: 5
+    desiredCapacity: 1
+    volumeSize: 20
+    iam:
+      withAddonPolicies:
+        albIngress: true
+  - name: generalV2
+    labels:
+      role: general
+    instanceType: t3.medium
+    minSize: 1
+    maxSize: 5
     desiredCapacity: 1
     volumeSize: 20
     iam:

@@ -103,6 +103,10 @@ spec:
           {{- end }}
           ports:
             - containerPort: {{ .Values.back.port }}
+          volumeMounts:
+            - name: secrets
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
           env:
             - name: APP
               value: "back"
@@ -163,7 +167,7 @@ spec:
             - name: APP
               value: "client"
             - name: SPRING_PROFILES_ACTIVE
-              value: "{{ .Values.profile}}"
+              value: "{{ .Values.profile }}"
             - name: CLIENT_ID
               valueFrom:
                 secretKeyRef:

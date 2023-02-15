@@ -47,7 +47,7 @@ stringData:
   secret: dHNzc3NzX2l0X2lzX3RoZV9yZWZyZXNoX3Rva2VuX3N1cGVyX3NlY3JldA==
 {{ else }}
 ---
-apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+apiVersion: secrets-store.csi.x-k8s.io/v1
 kind: SecretProviderClass
 metadata:
   name: aws-secrets
@@ -77,10 +77,12 @@ spec:
       type: Opaque
       data:
         - objectName: secret-jwt-access
+          key: secret
     - secretName: jwt-refresh
       type: Opaque
       data:
         - objectName: secret-jwt-refresh
+          key: secret
   parameters:
     objects: |
       - objectName: nytaxi/redis/password
@@ -105,7 +107,7 @@ spec:
       - objectName: nytaxi/jwt/access
         objectType: secretsmanager
         objectAlias: secret-jwt-access
-      - objectName: nnytaxi/jwt/refresh
+      - objectName: nytaxi/jwt/refresh
         objectType: secretsmanager
         objectAlias: secret-jwt-refresh
 {{ end }}

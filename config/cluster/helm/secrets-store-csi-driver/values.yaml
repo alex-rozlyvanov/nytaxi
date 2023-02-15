@@ -210,7 +210,7 @@ rbac:
 
 ## Install RBAC roles and bindings required for K8S Secrets syncing if true
 syncSecret:
-  enabled: false
+  enabled: true
 
 ## Enable secret rotation feature [alpha]
 enableSecretRotation: false

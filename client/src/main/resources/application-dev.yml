@@ -1,0 +1,13 @@
+load:
+  threads: 2
+  record-limits: 0
+  duration: 1m
+  throttle: 1000
+  url: 'https://nytaxi.orozlyvanov.click/api/v1/message'
+  file-path: '2018_Yellow_Taxi_Trip_Data.csv'
+  file-type: S3
+  file-bucket: "orozlyvanov-nytaxi-file-bucket"
+authentication:
+  url: 'https://nytaxi.orozlyvanov.click/api/v1/authenticator/login'
+  id: ${CLIENT_ID}
+  password: ${CLIENT_PASSWORD}

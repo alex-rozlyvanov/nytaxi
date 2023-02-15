@@ -41,7 +41,7 @@ services:
     ports:
       - '6379:6379'
     cpu_count: 2
-    command: redis-server --save 20 1 --loglevel warning --requirepass
+    command: redis-server --save 20 1 --loglevel warning --requirepass ApOCINp0q8n3cN48cn23CaO74PCSMoiT
     #    volumes:
     #      - cache:/data
     networks:

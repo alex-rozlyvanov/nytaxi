@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: taxi_calculator
+  redis:
+    host: localhost
+    port: 6379
+    client-name: calculator
+    password: ApOCINp0q8n3cN48cn23CaO74PCSMoiT
+  data:
+    redis:
+      repositories:
+        enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taxi
+    username: local_user
+    password: local_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate

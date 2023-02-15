@@ -1,4 +1,6 @@
 
+profile: "dev"
+
 image:
   rollDeployment: true
   repository: nytaxi
@@ -7,7 +9,6 @@ image:
 
 front:
   port: 8080
-  profile: "dev"
 
 back:
   port: 8080
@@ -18,14 +19,15 @@ redis:
 database:
   port: "5432"
 
+client:
+  enabled: true
+
 ingress:
   className: "alb"
-#  resourceTags:
-#    alb.ingress.kubernetes.io/tags: project={{ .Chart.Name }},namespace={{ .Release.Namespace }}
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-  host: "front.nytaxi"
+  host: "nytaxi.orozlyvanov.click"
   path: "/"
   service: "front"

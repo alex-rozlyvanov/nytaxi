@@ -1,4 +1,6 @@
 
+profile: "local-kube"
+
 image:
   rollDeployment: true
   repository: nytaxi
@@ -7,7 +9,6 @@ image:
 
 front:
   port: 8080
-  profile: "local-kube"
   resources:
 
 client:
