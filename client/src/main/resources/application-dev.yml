@@ -1,9 +1,10 @@
 load:
-  threads: 2
+  threads: 60
   record-limits: 0
   duration: 1m
   throttle: 1000
-  url: 'https://nytaxi.orozlyvanov.click/api/v1/message'
+  create-url: 'https://nytaxi.orozlyvanov.click/api/v1/message'
+  get-url: 'https://nytaxi.orozlyvanov.click/api/v1/total?year=2018'
   file-path: '2018_Yellow_Taxi_Trip_Data.csv'
   file-type: S3
   file-bucket: "orozlyvanov-nytaxi-file-bucket"

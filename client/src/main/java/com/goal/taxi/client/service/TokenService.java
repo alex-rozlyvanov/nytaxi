@@ -1,10 +1,7 @@
 package com.goal.taxi.client.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goal.taxi.client.config.AuthenticationProperties;
-import com.goal.taxi.client.config.LoadProperties;
-import com.goal.taxi.client.dto.LoginRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.config.RequestConfig;
@@ -22,11 +19,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TokenService {
-
+    private static final Object lock = new Object();
+    private static volatile String token;
+    private static volatile LocalDateTime tokenRefreshTime;
     private final AuthenticationProperties authenticationProperties;
     private final String loginEntity;
     private final RequestConfig requestConfig;
@@ -35,17 +36,21 @@ public class TokenService {
             .build();
 
 
-    public TokenService(final LoadProperties loadProperties,
-                        final AuthenticationProperties authenticationProperties) throws JsonProcessingException {
-        final var loginRequest = new LoginRequest(authenticationProperties.getId(), authenticationProperties.getPassword());
-        this.loginEntity = new ObjectMapper().writeValueAsString(loginRequest);
-        this.authenticationProperties = authenticationProperties;
-        this.requestConfig = RequestConfig.custom()
-                .setConnectTimeout((int) loadProperties.getRequest().getTimeout().toMillis())
-                .build();
+    public String getToken() {
+        if (tokenExpired()) {
+            synchronized (lock) {
+                if (tokenExpired()) {
+                    token = login();
+                    tokenRefreshTime = LocalDateTime.now();
+                    return token;
+                }
+            }
+        }
+
+        return token;
     }
 
-    public String getToken() {
+    private String login() {
         try {
             final var httpPost = new HttpPost(authenticationProperties.getUrl());
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -79,5 +84,10 @@ public class TokenService {
         }
 
         return buf.toString(StandardCharsets.UTF_8);
+    }
+
+    private boolean tokenExpired() {
+        return tokenRefreshTime == null || tokenRefreshTime.plus(authenticationProperties.getTokenExpiration())
+                .isBefore(LocalDateTime.now());
     }
 }

@@ -4,7 +4,8 @@ load:
   record-limits: 0
   duration: 1m
   throttle: 10_000
-  url: 'http://front/api/v1/message'
+  create-url: 'http://front/api/v1/message'
+  get-url: 'http://front/api/v1/total?year=2018'
   file-path: ${FILE_PATH}
   graceful-shutdown: 20s
   request:

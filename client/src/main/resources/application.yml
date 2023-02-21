@@ -4,8 +4,10 @@ load:
   record-limits: 0
   duration: 10s
   throttle: 10_000
-  url: 'http://front.nytaxi/api/v1/message'
+  create-url: 'http://front.nytaxi/api/v1/message'
+  get-url: 'http://front.nytaxi/api/v1/total?year=2018'
   file-path: '/home/o-rozlyvanov/Downloads/2018_Yellow_Taxi_Trip_Data.csv'
+  file-type: LOCAL
   graceful-shutdown: 20s
   request:
     timeout: 5s

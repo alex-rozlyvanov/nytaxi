@@ -24,11 +24,6 @@ public class S3FileProvider implements FileProvider {
     public BufferedReader getBufferedReader() throws FileNotFoundException {
         log.info("Downloading '{}' from S3 bucket '{}'...", key, bucket);
 
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
-
         final var path = "%s/%s".formatted(DEFAULT_PATH, key);
         final var file = new File(path);
         FileUtil.createMissingParentDirectories(file);
@@ -36,11 +31,19 @@ public class S3FileProvider implements FileProvider {
         if (file.exists()) {
             log.info("File '{}' exists", path);
         } else {
-            s3.getObject(getObjectRequest, ResponseTransformer.toFile(Path.of(path)));
-            log.info("File '{}' downloaded", path);
+            downloadFile(path);
         }
 
         return new BufferedReader(new FileReader(path));
+    }
+
+    private void downloadFile(final String path) {
+        final var getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+        s3.getObject(getObjectRequest, ResponseTransformer.toFile(Path.of(path)));
+        log.info("File '{}' downloaded", path);
     }
 
 }

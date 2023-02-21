@@ -15,7 +15,8 @@ public class LoadProperties {
     private Long recordLimits = 1000L;
     private Integer throttle = 10_000;
     private Duration duration = Duration.ofSeconds(10);
-    private String url = "http://localhost:8080/api/v1/message";
+    private String createUrl = "http://localhost:8080/api/v1/message";
+    private String getUrl = "http://localhost:8080/api/v1/total?year=2018";
     private String filePath = "test.csv";
     private FileType fileType = FileType.LOCAL;
     private String fileBucket;

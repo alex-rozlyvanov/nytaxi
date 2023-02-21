@@ -28,7 +28,8 @@ public class LoadService implements CommandLineRunner {
     private final ShutdownManager shutdownManager;
     private final FileProvider fileProvider;
     private final ThreadPoolExecutor executorService;
-    private final RequestTaskProvider requestTaskProvider;
+    private final CreateEventTaskProvider createEventTaskProvider;
+    private final GetEventTaskProvider getEventTaskProvider;
 
     @Override
     public void run(String... args) throws Exception {
@@ -44,7 +45,8 @@ public class LoadService implements CommandLineRunner {
                 StatisticCollector.recordsCounter.incrementAndGet();
                 final var taxiTripJson = toJsonObject(names, line.split(loadProperties.getSplitBy()));
 
-                executorService.execute(requestTaskProvider.getSendTask(taxiTripJson));
+                executorService.execute(createEventTaskProvider.getTask(taxiTripJson));
+                executorService.execute(getEventTaskProvider.getTask(taxiTripJson));
 
                 logMetaInfo();
                 idle();
@@ -82,7 +84,7 @@ public class LoadService implements CommandLineRunner {
     }
 
     private void logMetaInfo() {
-        if (StatisticCollector.recordsCounter.get() % 10000 == 0) {
+        if (StatisticCollector.recordsCounter.get() % 5000 == 0) {
             log.info("Pool size {}", executorService.getPoolSize());
             log.info("Active Threads {}", executorService.getActiveCount());
             log.info("Queued Tasks {}", executorService.getQueue().size());
