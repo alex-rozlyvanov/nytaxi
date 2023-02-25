@@ -8,8 +8,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClients;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -31,10 +29,7 @@ public class TokenService {
     private final AuthenticationProperties authenticationProperties;
     private final String loginEntity;
     private final RequestConfig requestConfig;
-    private final CloseableHttpClient client = HttpClients.custom()
-            .setRetryHandler(new DefaultHttpRequestRetryHandler(3, true))
-            .build();
-
+    private final CloseableHttpClient httpClient;
 
     public String getToken() {
         if (tokenExpired()) {
@@ -57,7 +52,7 @@ public class TokenService {
             httpPost.setConfig(this.requestConfig);
             httpPost.setEntity(new StringEntity(loginEntity));
 
-            try (final var response = client.execute(httpPost)) {
+            try (final var response = httpClient.execute(httpPost)) {
                 if (response.getStatusLine().getStatusCode() != 200) {
                     log.error("Response: {}", response);
                     throw new RuntimeException("Failed to login");
