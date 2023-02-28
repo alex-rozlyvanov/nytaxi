@@ -49,7 +49,7 @@ class LoginServiceTest {
 
         // THEN
         StepVerifier.create(mono).expectNextCount(1).verifyComplete();
-        verify(mockClientRepository).findById("test-id");
+        verify(mockClientRepository).findById("test-id1");
     }
 
     @Test
