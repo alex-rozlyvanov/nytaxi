@@ -4,7 +4,6 @@ import com.goal.taxi.common.dto.TotalDTO;
 import com.goal.taxi.front.mapper.TotalRequestMapper;
 import com.goal.taxi.front.service.TotalsService;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -26,12 +25,10 @@ public class TotalsController {
     private final TotalRequestMapper totalRequestMapper;
 
     @GetMapping
-    @Parameters({
-            @Parameter(required = true, in = ParameterIn.QUERY, name = "year", schema = @Schema(type = "integer", minimum = "-2147483648", maximum = "2147483647")),
-            @Parameter(required = true, in = ParameterIn.QUERY, name = "month", schema = @Schema(type = "integer", minimum = "1", maximum = "12")),
-            @Parameter(in = ParameterIn.QUERY, name = "day", schema = @Schema(type = "integer", minimum = "1", maximum = "31")),
-            @Parameter(in = ParameterIn.QUERY, name = "allParams", hidden = true),
-    })
+    @Parameter(required = true, in = ParameterIn.QUERY, name = "year", schema = @Schema(type = "integer", minimum = "-2147483648", maximum = "2147483647"))
+    @Parameter(required = true, in = ParameterIn.QUERY, name = "month", schema = @Schema(type = "integer", minimum = "1", maximum = "12"))
+    @Parameter(in = ParameterIn.QUERY, name = "day", schema = @Schema(type = "integer", minimum = "1", maximum = "31"))
+    @Parameter(in = ParameterIn.QUERY, name = "allParams", hidden = true)
     public Mono<TotalDTO> getTotals(@RequestParam final Map<String, String> allParams) {
         log.info("Get totals: {}", allParams);
 

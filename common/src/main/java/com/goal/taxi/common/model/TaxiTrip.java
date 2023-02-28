@@ -11,6 +11,7 @@ import java.util.UUID;
 @Data
 @Builder
 @Jacksonized
+@SuppressWarnings("java:S116")
 public class TaxiTrip {
     private final UUID id;
     private final Long vendorID;

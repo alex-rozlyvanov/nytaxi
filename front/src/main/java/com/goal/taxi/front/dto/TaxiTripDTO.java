@@ -12,6 +12,7 @@ import java.util.UUID;
 @Data
 @Builder
 @Jacksonized
+@SuppressWarnings("java:S116")
 public class TaxiTripDTO {
     private UUID id;
     @JsonProperty("VendorID")

@@ -10,9 +10,9 @@ import java.util.Map;
 
 @Component
 public class TotalRequestMapper {
-    private final String year = "year";
-    private final String month = "month";
-    private final String day = "day";
+    private static final String YEAR = "year";
+    private static final String MONTH = "month";
+    private static final String DAY = "day";
 
     public Mono<TotalRequestParams> map(final Map<String, String> map) {
         return validate(map)
@@ -20,10 +20,10 @@ public class TotalRequestMapper {
     }
 
     private Mono<Map<String, String>> validate(final Map<String, String> map) {
-        if (!map.containsKey(year) || !map.containsKey(month)) {
+        if (!map.containsKey(YEAR) || !map.containsKey(MONTH)) {
             return Mono.error(new TotalRequestException("Request parameters are missing - year, month, day(optional))"));
         }
-        if (!StringUtils.hasText(map.get(year)) || !StringUtils.hasText(map.get(month))) {
+        if (!StringUtils.hasText(map.get(YEAR)) || !StringUtils.hasText(map.get(MONTH))) {
             return Mono.error(new TotalRequestException("Request parameters are missing - year, month, day(optional))"));
         }
 
@@ -31,8 +31,8 @@ public class TotalRequestMapper {
     }
 
     private TotalRequestParams mapTo(final Map<String, String> map) {
-        final var yearValue = Integer.parseInt(map.get(year));
-        final var monthValue = Short.parseShort(map.get(month));
+        final var yearValue = Integer.parseInt(map.get(YEAR));
+        final var monthValue = Short.parseShort(map.get(MONTH));
 
         return TotalRequestParams.builder()
                 .year(yearValue)
@@ -42,10 +42,10 @@ public class TotalRequestMapper {
     }
 
     private short mapDay(final Map<String, String> map) {
-        final var dayValue = map.get(day);
+        final var dayValue = map.get(DAY);
 
         if (StringUtils.hasText(dayValue)) {
-            return Short.parseShort(map.get(this.day));
+            return Short.parseShort(map.get(DAY));
         }
 
         return 0;

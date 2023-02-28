@@ -13,6 +13,7 @@ import java.util.UUID;
 @Accessors(chain = true, fluent = true)
 @Entity
 @Table(name = "taxi_trip")
+@SuppressWarnings("java:S116")
 public class TaxiTripEntity {
     @Id
     @GeneratedValue(generator = "UUID")

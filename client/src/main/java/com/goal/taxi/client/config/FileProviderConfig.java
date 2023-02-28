@@ -15,13 +15,13 @@ public class FileProviderConfig {
 
     @Bean
     @ConditionalOnProperty(name = "load.file-type", havingValue = "S3")
-    FileProvider s3FileProvider () {
+    FileProvider s3FileProvider() {
         return new S3FileProvider(loadProperties.getFilePath(), loadProperties.getFileBucket());
     }
 
     @Bean
     @ConditionalOnProperty(name = "load.file-type", havingValue = "LOCAL")
-    FileProvider localFileProvider () {
+    FileProvider localFileProvider() {
         return new LocalFileProvider(loadProperties.getFilePath());
     }
 }

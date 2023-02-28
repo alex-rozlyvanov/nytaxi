@@ -1,6 +1,7 @@
 package com.goal.taxi.client.service;
 
 import com.goal.taxi.client.config.AuthenticationProperties;
+import com.goal.taxi.client.exception.TokenServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
@@ -52,21 +53,25 @@ public class TokenService {
             httpPost.setConfig(this.requestConfig);
             httpPost.setEntity(new StringEntity(loginEntity));
 
-            try (final var response = httpClient.execute(httpPost)) {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    log.error("Response: {}", response);
-                    throw new RuntimeException("Failed to login");
-                }
-
-                String text = toString(response.getEntity().getContent());
-                final var accessToken = new JSONObject(text).getString("accessToken");
-                return "Bearer %s".formatted(accessToken);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
+            return executeLogin(httpPost);
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TokenServiceException(e);
+        }
+    }
+
+    private String executeLogin(HttpPost httpPost) throws IOException {
+        try (final var response = httpClient.execute(httpPost)) {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                log.error("Response: {}", response);
+                throw new TokenServiceException("Failed to login");
+            }
+
+            final var text = toString(response.getEntity().getContent());
+            final var accessToken = new JSONObject(text).getString("accessToken");
+            return "Bearer %s".formatted(accessToken);
+        } catch (JSONException e) {
+            throw new TokenServiceException(e);
         }
     }
 

@@ -23,13 +23,13 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class LoadService implements CommandLineRunner {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static Duration start;
     private final LoadProperties loadProperties;
     private final ShutdownManager shutdownManager;
     private final FileProvider fileProvider;
     private final ThreadPoolExecutor executorService;
     private final CreateEventTaskProvider createEventTaskProvider;
     private final GetEventTaskProvider getEventTaskProvider;
+    private Duration start;
 
     @Override
     public void run(String... args) throws Exception {

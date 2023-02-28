@@ -23,12 +23,12 @@ public class LoadProperties {
     private Duration gracefulShutdown = Duration.ofSeconds(10);
     private Request request = new Request();
 
+    public enum FileType {
+        LOCAL, S3
+    }
+
     @Data
     public static class Request {
         private Duration timeout = Duration.ofSeconds(5);
-    }
-
-    public enum FileType {
-        LOCAL, S3
     }
 }

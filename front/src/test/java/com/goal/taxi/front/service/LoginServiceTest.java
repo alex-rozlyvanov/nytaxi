@@ -156,8 +156,6 @@ class LoginServiceTest {
         final var client = new Client().setPassword("encoded");
         when(mockClientRepository.findById(any())).thenReturn(Mono.just(client));
         when(mockPasswordEncoder.matches(any(), any())).thenReturn(false);
-//        when(mockJwtTokenService.generateAccessToken(any())).thenReturn("accessToken");
-//        when(mockRefreshTokenService.createRefreshToken(any())).thenReturn(Mono.just("refreshToken"));
 
         final var request = LoginRequest.builder().id("test-id").password("raw").build();
 
