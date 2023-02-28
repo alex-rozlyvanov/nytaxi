@@ -49,7 +49,7 @@ class LoginServiceTest {
 
         // THEN
         StepVerifier.create(mono).expectNextCount(1).verifyComplete();
-        verify(mockClientRepository).findById("test-id1");
+        verify(mockClientRepository).findById("test-id");
     }
 
     @Test
@@ -134,9 +134,6 @@ class LoginServiceTest {
     void login_clientNotFound_exceptionThrown() {
         // GIVEN
         when(mockClientRepository.findById(any())).thenReturn(Mono.empty());
-//        when(mockPasswordEncoder.matches(any(), any())).thenReturn(true);
-//        when(mockJwtTokenService.generateAccessToken(any())).thenReturn("accessToken");
-//        when(mockRefreshTokenService.createRefreshToken(any())).thenReturn(Mono.just("refreshToken"));
 
         final var request = LoginRequest.builder().id("test-id").password("raw").build();
 
